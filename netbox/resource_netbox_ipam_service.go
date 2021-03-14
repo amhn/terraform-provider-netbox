@@ -65,9 +65,13 @@ func resourceNetboxIpamService() *schema.Resource {
 				ValidateFunc: validation.StringLenBetween(1, 50),
 			},
 			"port": {
-				Type:         schema.TypeInt,
+				Type:         schema.TypeList,
 				Required:     true,
-				ValidateFunc: validation.IntBetween(1, 65535),
+				// ValidateFunc: validation.IntBetween(1, 65535),
+				Elem: &schema.Schema{
+					Type: schema.TypeInt,
+					ValidateFunc: validation.IntBetween(1, 65535),
+				},
 			},
 			"protocol": {
 				Type:         schema.TypeString,
@@ -109,7 +113,8 @@ func resourceNetboxIpamServiceCreate(d *schema.ResourceData,
 	IPaddressesID := d.Get("ip_addresses_id").([]interface{})
 	IPaddressesID64 := []int64{}
 	name := d.Get("name").(string)
-	port := int64(d.Get("port").(int))
+	port := d.Get("port").([]interface{})
+	port64 := []int64{}
 	protocol := d.Get("protocol").(string)
 	tags := d.Get("tag").(*schema.Set).List()
 	virtualmachineID := int64(d.Get("virtualmachine_id").(int))
@@ -117,13 +122,16 @@ func resourceNetboxIpamServiceCreate(d *schema.ResourceData,
 	for _, id := range IPaddressesID {
 		IPaddressesID64 = append(IPaddressesID64, int64(id.(int)))
 	}
+	for _, id := range port {
+		port64 = append(IPaddressesID64, int64(id.(int)))
+	}
 
 	newResource := &models.WritableService{
 		CustomFields: &customFields,
 		Description:  description,
 		Ipaddresses:  IPaddressesID64,
 		Name:         &name,
-		Port:         &port,
+		Port:         port64,
 		Protocol:     &protocol,
 		Tags:         convertTagsToNestedTags(tags),
 	}
@@ -240,8 +248,12 @@ func resourceNetboxIpamServiceUpdate(d *schema.ResourceData,
 	name := d.Get("name").(string)
 	params.Name = &name
 
-	port := int64(d.Get("port").(int))
-	params.Port = &port
+	Port := d.Get("port").([]interface{})
+	Port64 := []int64{}
+	for _, id := range Port {
+		Port64 = append(Port64, int64(id.(int)))
+	}
+	params.Port = Port64
 
 	protocol := d.Get("protocol").(string)
 	params.Protocol = &protocol

@@ -73,7 +73,7 @@ type WritableService struct {
 	// Required: true
 	// Maximum: 65535
 	// Minimum: 1
-	Port *int64 `json:"port"`
+	Port []int64 `json:"ports"`
 
 	// Protocol
 	// Required: true
@@ -213,13 +213,13 @@ func (m *WritableService) validatePort(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MinimumInt("port", "body", int64(*m.Port), 1, false); err != nil {
-		return err
-	}
+	// if err := validate.MinimumInt("port", "body", int64(*m.Port), 1, false); err != nil {
+	// 	return err
+	// }
 
-	if err := validate.MaximumInt("port", "body", int64(*m.Port), 65535, false); err != nil {
-		return err
-	}
+	// if err := validate.MaximumInt("port", "body", int64(*m.Port), 65535, false); err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
